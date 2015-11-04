@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd">
+
+    <!--<bean id="rat" class="viaAnnotations.LabRat">
+        <constructor-arg value="Hi!"/>
+        <property name="name" value="Olga"/>
+    </bean>
+-->
+
+    <!--for persistence -->
+    <!--определить источник данных - мост между СУБД и Hibernate-->
+   <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+       <property name="driverClassName" value="org.hsqldb.jdbc.JDBCDriver" />
+       <property name="url" value="jdbc:hsqldb:file:C:/Users/Olga Pavlova/IdeaProjects/JPASpringNamingIDEA141360/DB/temp1/TESTDB" />
+       <property name="username" value="SA" />
+       <property name="password" value="" />
+
+   </bean>
+   <!--описать фабрику, которая будет строить Hibernate-сессии-->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:resources/hibernate.cfg.xml"/>
+        <property name="configurationClass" value="org.hibernate.cfg.Configuration"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+                <prop key="hibernate.ejb.naming_strategy">persistence.ggg.MyNamingStrategy</prop>
+                <prop key="hibernate.archive.autodetection">class</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+            </props>
+        </property>
+
+    </bean>
+    <!--определим менеджер транзакций (директива tx:annotation-driven, включающая механизм управления транзакциями через аннотации)-->
+    <tx:annotation-driven transaction-manager="txManager" />
+    <bean id="txManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+<!--слой DAO и слоя бизнес-логики-->
+    <bean id="entityDAO" class="persistence.dao.EntityDao">
+        <property name="sessionFactory" ref="sessionFactory" />
+
+    </bean>
+
+    <bean id="entityService" class="persistence.services.MyEntityService">
+        <property name="dao" ref="entityDAO" />
+    </bean>
+
+</beans>
